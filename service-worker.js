@@ -6,8 +6,8 @@ const maxOpenTabs = 3;
 // this will be a user option
 const tuckedTabsGroupName = "T";
 
-chrome.action.onClicked.addListener(
-    function (tab) {
+chrome.tabs.onCreated.addListener(
+    () => {
         let tuckedTabGroupId = -1;
         chrome.tabGroups.query({
                 title: tuckedTabsGroupName
