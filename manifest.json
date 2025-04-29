@@ -2,14 +2,19 @@
     "manifest_version": 3,
     "name": "Tab Tuck",
     "description": "Tuck your tabs away and focus on the task at hand.",
-    "version": "0.1",
+    "version": "0.2",
     "background": {
         "service_worker": "service-worker.js"
     },
     "action": {
+        "default_popup": "popup.html",
         "default_icon": {
             "32": "icons/icon-32.png"
         }
+    },
+    "options_ui": {
+        "page": "popup.html",
+        "open_in_tab": false
     },
     "permissions": ["tabs", "tabGroups", "storage"]
 }

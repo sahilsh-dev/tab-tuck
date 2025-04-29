@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Tab Tuck Extension Options</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="root">
+        <h2>Tab Tuck Extension Options</h2>
+        <div class="options">
+            <div class="option">
+                <label for="tabTuckEnabled">Enable Tab Tuck:</label>
+                <input type="checkbox" id="tabTuckEnabled">
+            </div>
+            <div class="option">
+                <label for="tabLimit">Tab Limit:</label>
+                <input type="number" id="tabLimit" min="1" value="12">
+            </div>
+            <div class="option">
+                <label for="tuckedTabsGroupName">Enter new name for tab tuck group:</label>
+                <input type="text" id="tuckedTabsGroupName" placeholder="T">
+            </div>
+        </div>
+        <div id="status"></div>
+        <button id="save">Save</button>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>
