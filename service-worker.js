@@ -14,6 +14,7 @@ chrome.tabs.onCreated.addListener(
             }, (tabGroups) => {
                 if (tabGroups.length) {
                     console.log(tabGroups);
+                    // TODO: show warning if count of tucked tabs is large or disable tabs
                     tuckedTabGroupId = tabGroups[0].id
                     console.log("Found tucked tab group with ID: " + tuckedTabGroupId);
                 }
@@ -24,6 +25,7 @@ chrome.tabs.onCreated.addListener(
                 currentWindow: true, 
                 groupId: chrome.tabGroups.TAB_GROUP_ID_NONE
             }, (tabs) => {
+                tabs = tabs.filter(tab => tab.pinned === false);
                 const sortedTabs = tabs.sort((a, b) => a.lastAccessed - b.lastAccessed);
                 console.log(sortedTabs);
 
