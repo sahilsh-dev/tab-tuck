@@ -2,10 +2,16 @@
 
 A WIP fully open source, chrome extension that make it easy to manage your extra tabs while you are busy being productive! Free Forever
 
+## Features
+- Easy to use
+- Fully open source
+- Free Forever unlike other tab management extensions
+- Configurable options
+
 ## TODO
 
 - [x] Create MVP
-- [ ] Add user options
+- [x] Add user options
 - [ ] Update icons
 - [ ] Publish to store
 
