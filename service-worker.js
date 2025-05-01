@@ -21,6 +21,25 @@ chrome.storage.onChanged.addListener((changes, area) => {
 			maxOpenTabs = changes.tabLimit.newValue;
 		}
 		if (changes.tuckedTabsGroupName) {
+            console.log("Tucked tabs group name changed", changes.tuckedTabsGroupName.newValue, tuckedTabsGroupName);
+            chrome.tabGroups.query(
+                {
+                    title: tuckedTabsGroupName,
+                },
+                (tabGroups) => {
+                    if (tabGroups.length) {
+                        chrome.tabGroups.update(
+                            tabGroups[0].id,
+                            {
+                                title: changes.tuckedTabsGroupName.newValue,
+                            },
+                            () => {
+                                console.log("Updated tab group name");
+                            }
+                        );
+                    }
+                }
+			);
 			tuckedTabsGroupName = changes.tuckedTabsGroupName.newValue;
 		}
 		console.log("Service worker config updated from storage:", {
