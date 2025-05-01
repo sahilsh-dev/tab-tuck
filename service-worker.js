@@ -1,61 +1,85 @@
-// number of tabs to be kept open at a time, set by user
-// this will be a user option
-const maxOpenTabs = 3; 
+let tabTuckEnabled = true;
+let maxOpenTabs = 3; 
+let tuckedTabsGroupName = "T";
 
-// name of the group containing the tabs that are to be tucked away
-// this will be a user option
-const tuckedTabsGroupName = "T";
-
-chrome.tabs.onCreated.addListener(
-    () => {
-        let tuckedTabGroupId = -1;
-        chrome.tabGroups.query({
-                title: tuckedTabsGroupName
-            }, (tabGroups) => {
-                if (tabGroups.length) {
-                    console.log(tabGroups);
-                    // TODO: show warning if count of tucked tabs is large or disable tabs
-                    tuckedTabGroupId = tabGroups[0].id
-                    console.log("Found tucked tab group with ID: " + tuckedTabGroupId);
-                }
-            }
-        )
-
-        chrome.tabs.query({ 
-                currentWindow: true, 
-                groupId: chrome.tabGroups.TAB_GROUP_ID_NONE
-            }, (tabs) => {
-                tabs = tabs.filter(tab => tab.pinned === false);
-                const sortedTabs = tabs.sort((a, b) => a.lastAccessed - b.lastAccessed);
-                console.log(sortedTabs);
-
-                // closing older tabs
-                if (sortedTabs.length > maxOpenTabs) {
-                    if (tuckedTabGroupId === -1) {
-                        chrome.tabs.group({
-                                tabIds: sortedTabs.slice(0, sortedTabs.length - maxOpenTabs).map(tab => tab.id)
-                            }, (groupId) => {
-                                console.log("Grouped tabs successfully");
-                                chrome.tabGroups.update(groupId, {
-                                    title: tuckedTabsGroupName,
-                                    color: "grey" // this will be a user option
-                                }, () => {
-                                    console.log("Updated group title and color");
-                                });
-                            }
-                        )
-                    } else {
-                        console.log("Tucking away tabs into existing group");
-                        chrome.tabs.group({
-                                tabIds: sortedTabs.slice(0, sortedTabs.length - maxOpenTabs).map(tab => tab.id),
-                                groupId: tuckedTabGroupId
-                            }, (groupId) => {
-                                console.log("Grouped tabs successfully");
-                            }
-                        )
-                    }
-                }
-            }
-        );
+// load user options
+chrome.storage.sync.get(
+    { tabTuckEnabled: true, tabLimit: 12, tuckedTabsGroupName: 'T' },
+    (items) => {
+        tabTuckEnabled = items.tabTuckEnabled;
+        maxOpenTabs = items.tabLimit;
+        tuckedTabsGroupName = items.tuckedTabsGroupName;
     }
-)
+);
+
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync') {
+        if (changes.tabTuckEnabled) {
+            tabTuckEnabled = changes.tabTuckEnabled.newValue;
+        }
+        if (changes.tabLimit) {
+            maxOpenTabs = changes.tabLimit.newValue;
+        }
+        if (changes.tuckedTabsGroupName) {
+            tuckedTabsGroupName = changes.tuckedTabsGroupName.newValue;
+        }
+        console.log('Service worker config updated from storage:', {
+            tabTuckEnabled,
+            maxOpenTabs,
+            tuckedTabsGroupName
+        });
+    }
+});
+
+chrome.tabs.onCreated.addListener(() => {
+    if (!tabTuckEnabled) {
+        console.log("Tab tuck is disabled");
+        return;
+    }
+
+    let tuckedTabGroupId = -1;
+    chrome.tabGroups.query({
+        title: tuckedTabsGroupName
+    }, (tabGroups) => {
+        if (tabGroups.length) {
+            // TODO: show warning if count of tucked tabs is large or disable tabs
+            tuckedTabGroupId = tabGroups[0].id
+            console.log("Found tucked tab group with ID: " + tuckedTabGroupId);
+        }
+    }
+    )
+
+    chrome.tabs.query({
+        currentWindow: true,
+        groupId: chrome.tabGroups.TAB_GROUP_ID_NONE
+    }, (tabs) => {
+        tabs = tabs.filter(tab => tab.pinned === false);
+        const sortedTabs = tabs.sort((a, b) => a.lastAccessed - b.lastAccessed);
+        console.log(sortedTabs);
+
+        // closing older tabs
+        if (sortedTabs.length > maxOpenTabs) {
+            if (tuckedTabGroupId === -1) {
+                chrome.tabs.group({
+                    tabIds: sortedTabs.slice(0, sortedTabs.length - maxOpenTabs).map(tab => tab.id)
+                }, (groupId) => {
+                    console.log("Grouped tabs successfully");
+                    chrome.tabGroups.update(groupId, {
+                        title: tuckedTabsGroupName,
+                        color: "grey", // this will be a user option
+                    }, () => {
+                        console.log("Updated tab group");
+                    });
+                })
+            } else {
+                console.log("Tucking away tabs into existing group");
+                chrome.tabs.group({
+                    tabIds: sortedTabs.slice(0, sortedTabs.length - maxOpenTabs).map(tab => tab.id),
+                    groupId: tuckedTabGroupId
+                }, (groupId) => {
+                    console.log("Grouped tabs successfully");
+                })
+            }
+        }
+    });
+})
