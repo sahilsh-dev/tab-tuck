@@ -12,7 +12,7 @@ A WIP fully open source, chrome extension that make it easy to manage your extra
 
 - [x] Create MVP
 - [x] Add user options
-- [ ] Update icons
+- [x] Update icons
 - [ ] Publish to store
 
 ## Contributions
