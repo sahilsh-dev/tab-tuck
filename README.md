@@ -13,7 +13,7 @@ A WIP fully open source, chrome extension that make it easy to manage your extra
 - [x] Create MVP
 - [x] Add user options
 - [x] Update icons
-- [ ] Publish to store
+- [x] Publish to store
 
 ## Contributions
 
