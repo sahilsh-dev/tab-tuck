@@ -1,6 +1,7 @@
 let tabTuckEnabled = true;
-let maxOpenTabs = 3;
+let maxOpenTabs = 500;
 let tuckedTabsGroupName = "T";
+let tuckedTabGroupId = -1;
 
 // load user options
 chrome.storage.sync.get(
@@ -12,6 +13,7 @@ chrome.storage.sync.get(
 	}
 );
 
+// handle user configurations
 chrome.storage.onChanged.addListener((changes, area) => {
 	if (area === "sync") {
 		if (changes.tabTuckEnabled) {
@@ -51,12 +53,13 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 chrome.tabs.onCreated.addListener(() => {
+	console.log("Created new tab");
 	if (!tabTuckEnabled) {
 		console.log("Tab tuck is disabled");
 		return;
 	}
 
-	let tuckedTabGroupId = -1;
+	tuckedTabGroupId = -1; // reset tucked tab group ID incase tab group was ungrouped
 	chrome.tabGroups.query(
 		{
 			title: tuckedTabsGroupName,
@@ -78,7 +81,6 @@ chrome.tabs.onCreated.addListener(() => {
 		(tabs) => {
 			tabs = tabs.filter((tab) => tab.pinned === false);
 			const sortedTabs = tabs.sort((a, b) => a.lastAccessed - b.lastAccessed);
-			console.log(sortedTabs);
 
 			// closing older tabs
 			if (sortedTabs.length > maxOpenTabs) {
@@ -119,6 +121,36 @@ chrome.tabs.onCreated.addListener(() => {
 					);
 				}
 			}
+		}
+	);
+});
+
+// handle tab removal to ungroup the last tucked tab
+chrome.tabs.onRemoved.addListener(() => {
+	console.log("Tab removed");
+	if (!tabTuckEnabled) {
+		console.log("Tab tuck is disabled");
+		return;
+	}
+
+	if (tuckedTabGroupId === -1) {
+		console.log("No tucked tab group found, skipping tab removal from group");
+		return;
+	}
+
+	chrome.tabs.query(
+		{
+			currentWindow: true,
+			groupId: tuckedTabGroupId,
+		},
+		(tabs) => {
+			tabs = tabs.filter((tab) => tab.pinned === false);
+			const sortedTuckedTabs = tabs.sort((a, b) => a.lastAccessed - b.lastAccessed);
+			console.log("Sorted tabs in tucked group:", sortedTuckedTabs);
+			if (sortedTuckedTabs.length === 0) {
+				return;
+			}
+			chrome.tabs.ungroup(sortedTuckedTabs[sortedTuckedTabs.length - 1].id);
 		}
 	);
 });
