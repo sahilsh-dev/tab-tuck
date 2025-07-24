@@ -144,13 +144,18 @@ chrome.tabs.onRemoved.addListener(() => {
 			groupId: tuckedTabGroupId,
 		},
 		(tabs) => {
-			tabs = tabs.filter((tab) => tab.pinned === false);
-			const sortedTuckedTabs = tabs.sort((a, b) => a.lastAccessed - b.lastAccessed);
-			console.log("Sorted tabs in tucked group:", sortedTuckedTabs);
-			if (sortedTuckedTabs.length === 0) {
+			if (tabs.length === 0) {
+				console.log("No tucked tabs found, skipping ungrouping");
 				return;
 			}
-			chrome.tabs.ungroup(sortedTuckedTabs[sortedTuckedTabs.length - 1].id);
+			// console.log("Tucked tabs found:", tabs, tuckedTabGroupId);
+			let lastTuckedTabIdx = 0;
+			for (let i = 1; i < tabs.length; i++) {
+				if (tabs[i].lastAccessed > tabs[lastTuckedTabIdx].lastAccessed) {
+					lastTuckedTabIdx = i;
+				}
+			}
+			chrome.tabs.ungroup(tabs[lastTuckedTabIdx].id);
 		}
 	);
 });
