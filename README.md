@@ -1,6 +1,6 @@
 # Tab Tuck
 
-A WIP fully open source, chrome extension that make it easy to manage your extra tabs while you are busy being productive! Free Forever
+A fully open source, chrome extension that make it easy to manage your extra tabs while you are busy being productive! Free Forever
 
 ## Features
 - Easy to use
